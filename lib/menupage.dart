@@ -1,14 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductsPage extends StatefulWidget {
   final void Function(List<Map<String, dynamic>> items)? onCheckout;
 
-  const ProductsPage({
-    super.key,
-    this.onCheckout,
-  });
+  const ProductsPage({super.key, this.onCheckout});
 
   @override
   State<ProductsPage> createState() => _ProductsPageState();
@@ -103,16 +99,14 @@ class _ProductsPageState extends State<ProductsPage> {
     );
   }
 
-  void _addToCart(
-    Map<String, dynamic> product,
-    List<String> selectedToppings,
-  ) {
+  void _addToCart(Map<String, dynamic> product, List<String> selectedToppings) {
     final productId = product['id'];
 
     final existingIndex = _cart.indexWhere((item) {
       final sameProduct = item['menu_id'] == productId;
-      final existingToppings =
-          List<String>.from(item['selected_toppings'] ?? []);
+      final existingToppings = List<String>.from(
+        item['selected_toppings'] ?? [],
+      );
 
       return sameProduct &&
           existingToppings.length == selectedToppings.length &&
@@ -136,9 +130,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          '${product['name']} ditambahkan ke keranjang.',
-        ),
+        content: Text('${product['name']} ditambahkan ke keranjang.'),
         backgroundColor: darkBrown,
         duration: const Duration(seconds: 2),
       ),
@@ -164,9 +156,7 @@ class _ProductsPageState extends State<ProductsPage> {
       backgroundColor: cream,
       barrierColor: Colors.black54,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetContext) {
         return StatefulBuilder(
@@ -313,8 +303,7 @@ class _ProductsPageState extends State<ProductsPage> {
                           )
                         else
                           ...toppings.map((topping) {
-                            final selected =
-                                selectedToppings.contains(topping);
+                            final selected = selectedToppings.contains(topping);
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
@@ -328,8 +317,9 @@ class _ProductsPageState extends State<ProductsPage> {
                                 checkColor: cream,
                                 controlAffinity:
                                     ListTileControlAffinity.leading,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 title: Text(
                                   topping,
                                   style: const TextStyle(
@@ -360,11 +350,7 @@ class _ProductsPageState extends State<ProductsPage> {
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                     decoration: const BoxDecoration(
                       color: cream,
-                      border: Border(
-                        top: BorderSide(
-                          color: Color(0x33995631),
-                        ),
-                      ),
+                      border: Border(top: BorderSide(color: Color(0x33995631))),
                     ),
                     child: SizedBox(
                       height: 48,
@@ -378,8 +364,9 @@ class _ProductsPageState extends State<ProductsPage> {
                           ),
                         ),
                         onPressed: () {
-                          final chosenToppings =
-                              List<String>.from(selectedToppings);
+                          final chosenToppings = List<String>.from(
+                            selectedToppings,
+                          );
 
                           Navigator.pop(sheetContext);
 
@@ -424,278 +411,391 @@ class _ProductsPageState extends State<ProductsPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: cream,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return FractionallySizedBox(
-              heightFactor: 0.75,
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  Container(
-                    width: 42,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: background.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(99),
+              heightFactor: 0.78,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: cream,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+
+                    // Handle
+                    Container(
+                      width: 42,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: background.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'Keranjang Pesanan',
-                            style: TextStyle(
-                              color: darkBrown,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              fontFamily: 'Poppins',
+
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(22, 20, 16, 16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: lightCream,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.shopping_basket_rounded,
+                              color: background,
+                              size: 25,
                             ),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(sheetContext),
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: darkBrown,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: _cart.isEmpty
-                        ? const Center(
+                          const SizedBox(width: 12),
+                          Expanded(
                             child: Column(
-                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.shopping_basket_outlined,
-                                  size: 56,
-                                  color: background,
-                                ),
-                                SizedBox(height: 12),
-                                Text(
-                                  'Keranjang masih kosong.',
+                                const Text(
+                                  'Keranjang Pesanan',
                                   style: TextStyle(
                                     color: darkBrown,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w900,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                Text(
+                                  '$_cartCount item dalam keranjang',
+                                  style: const TextStyle(
+                                    color: background,
+                                    fontSize: 11,
                                     fontFamily: 'Poppins',
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: darkBrown,
                             ),
-                            itemCount: _cart.length,
-                            itemBuilder: (context, index) {
-                              final item = _cart[index];
-                              final toppings = List<String>.from(
-                                item['selected_toppings'] ?? [],
-                              );
-                              final quantity =
-                                  _number(item['quantity']).toInt();
-                              final unitPrice =
-                                  _number(item['unit_price']);
+                          ),
+                        ],
+                      ),
+                    ),
 
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: lightCream,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color: cream,
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                      ),
-                                      child: const Icon(
-                                        Icons.local_cafe_rounded,
-                                        color: background,
-                                      ),
+                    const Divider(height: 1, color: Color(0x33995631)),
+
+                    // Cart contents
+                    Expanded(
+                      child: _cart.isEmpty
+                          ? const Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.shopping_basket_outlined,
+                                    size: 64,
+                                    color: background,
+                                  ),
+                                  SizedBox(height: 14),
+                                  Text(
+                                    'Keranjang masih kosong',
+                                    style: TextStyle(
+                                      color: darkBrown,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'Poppins',
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item['menu_name'].toString(),
-                                            style: const TextStyle(
-                                              color: darkBrown,
-                                              fontWeight: FontWeight.w800,
-                                              fontFamily: 'Poppins',
-                                            ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Yuk, pilih minuman favoritmu!',
+                                    style: TextStyle(
+                                      color: background,
+                                      fontSize: 12,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(
+                                20,
+                                18,
+                                20,
+                                12,
+                              ),
+                              itemCount: _cart.length,
+                              itemBuilder: (context, index) {
+                                final item = _cart[index];
+                                final toppings = List<String>.from(
+                                  item['selected_toppings'] ?? [],
+                                );
+                                final quantity = _number(item['quantity'])
+                                    .toInt();
+                                final unitPrice = _number(item['unit_price']);
+
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: lightCream,
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: background.withValues(alpha: 0.12),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 54,
+                                        height: 54,
+                                        decoration: BoxDecoration(
+                                          color: cream,
+                                          borderRadius: BorderRadius.circular(
+                                            14,
                                           ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            _formatPrice(unitPrice),
-                                            style: const TextStyle(
-                                              color: background,
-                                              fontSize: 12,
-                                              fontFamily: 'Poppins',
-                                            ),
-                                          ),
-                                          if (toppings.isNotEmpty)
+                                        ),
+                                        child: const Icon(
+                                          Icons.local_cafe_rounded,
+                                          color: background,
+                                          size: 28,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+
+                                      // Item information
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
                                             Text(
-                                              toppings.join(', '),
+                                              item['menu_name'].toString(),
                                               style: const TextStyle(
-                                                color: background,
-                                                fontSize: 11,
+                                                color: darkBrown,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w800,
                                                 fontFamily: 'Poppins',
                                               ),
                                             ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            _formatPrice(
-                                              unitPrice * quantity,
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              _formatPrice(unitPrice),
+                                              style: const TextStyle(
+                                                color: background,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                fontFamily: 'Poppins',
+                                              ),
                                             ),
-                                            style: const TextStyle(
-                                              color: burgundy,
-                                              fontWeight: FontWeight.w800,
-                                              fontFamily: 'Poppins',
+
+                                            if (toppings.isNotEmpty) ...[
+                                              const SizedBox(height: 5),
+                                              Text(
+                                                toppings.join(' · '),
+                                                style: const TextStyle(
+                                                  color: background,
+                                                  fontSize: 10,
+                                                  fontFamily: 'Poppins',
+                                                ),
+                                              ),
+                                            ],
+
+                                            const SizedBox(height: 9),
+
+                                            Text(
+                                              _formatPrice(
+                                                unitPrice * quantity,
+                                              ),
+                                              style: const TextStyle(
+                                                color: burgundy,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w900,
+                                                fontFamily: 'Poppins',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Quantity controls
+                                      Column(
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: cream,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                        minWidth: 32,
+                                                        minHeight: 32,
+                                                      ),
+                                                  onPressed: () {
+                                                    _changeQuantity(index, -1);
+                                                    setSheetState(() {});
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.remove_rounded,
+                                                    size: 17,
+                                                    color: background,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '$quantity',
+                                                  style: const TextStyle(
+                                                    color: darkBrown,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w800,
+                                                    fontFamily: 'Poppins',
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                        minWidth: 32,
+                                                        minHeight: 32,
+                                                      ),
+                                                  onPressed: () {
+                                                    _changeQuantity(index, 1);
+                                                    setSheetState(() {});
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.add_rounded,
+                                                    size: 17,
+                                                    color: background,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    IconButton(
-                                      visualDensity: VisualDensity.compact,
-                                      onPressed: () {
-                                        _changeQuantity(index, -1);
-                                        setSheetState(() {});
-                                      },
-                                      icon: const Icon(
-                                        Icons.remove_circle_outline,
-                                        color: background,
-                                      ),
-                                    ),
-                                    Text(
-                                      '$quantity',
-                                      style: const TextStyle(
-                                        color: darkBrown,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      visualDensity: VisualDensity.compact,
-                                      onPressed: () {
-                                        _changeQuantity(index, 1);
-                                        setSheetState(() {});
-                                      },
-                                      icon: const Icon(
-                                        Icons.add_circle_outline,
-                                        color: background,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: Color(0x33995631),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+
+                    // Checkout section
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(22, 16, 22, 20),
+                      decoration: const BoxDecoration(
+                        color: cream,
+                        border: Border(
+                          top: BorderSide(color: Color(0x33995631)),
                         ),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Subtotal',
-                              style: TextStyle(
-                                color: darkBrown,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Poppins',
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Subtotal',
+                                style: TextStyle(
+                                  color: darkBrown,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Poppins',
+                                ),
                               ),
-                            ),
-                            Text(
-                              _formatPrice(_cartTotal),
-                              style: const TextStyle(
-                                color: burgundy,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                fontFamily: 'Poppins',
+                              Text(
+                                _formatPrice(_cartTotal),
+                                style: const TextStyle(
+                                  color: burgundy,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'Poppins',
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: background,
-                              foregroundColor: cream,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: background,
+                                foregroundColor: cream,
+                                disabledBackgroundColor: background.withValues(
+                                  alpha: 0.35,
+                                ),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
-                            ),
-                            onPressed: _cart.isEmpty
-                                ? null
-                                : () {
-                                    final items = _cart
-                                        .map(
-                                          (item) =>
-                                              Map<String, dynamic>.from(item),
-                                        )
-                                        .toList();
+                              onPressed: _cart.isEmpty
+                                  ? null
+                                  : () {
+                                      final items = _cart
+                                          .map(
+                                            (item) =>
+                                                Map<String, dynamic>.from(item),
+                                          )
+                                          .toList();
 
-                                    Navigator.pop(sheetContext);
+                                      Navigator.pop(sheetContext);
 
-                                    if (widget.onCheckout != null) {
-                                      widget.onCheckout!(items);
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Checkout belum dihubungkan.',
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                            child: const Text(
-                              'Lanjut ke checkout',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Poppins',
+                                      if (widget.onCheckout != null) {
+                                        widget.onCheckout!(items);
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Checkout belum dihubungkan.',
+                                                ),
+                                              ),
+                                            );
+                                      }
+                                    },
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Lanjut ke checkout',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_rounded, size: 19),
+                                ],
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -863,11 +963,7 @@ class _ProductsPageState extends State<ProductsPage> {
               if (_loading)
                 const SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: cream,
-                    ),
-                  ),
+                  child: Center(child: CircularProgressIndicator(color: cream)),
                 )
               else if (_error != null)
                 SliverFillRemaining(
@@ -922,11 +1018,7 @@ class _ProductsPageState extends State<ProductsPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.coffee_outlined,
-                            color: cream,
-                            size: 60,
-                          ),
+                          Icon(Icons.coffee_outlined, color: cream, size: 60),
                           SizedBox(height: 12),
                           Text(
                             'Belum ada menu tersedia.',
@@ -946,15 +1038,12 @@ class _ProductsPageState extends State<ProductsPage> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildProductCard(_products[index]),
-                        );
-                      },
-                      childCount: _products.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildProductCard(_products[index]),
+                      );
+                    }, childCount: _products.length),
                   ),
                 ),
             ],
