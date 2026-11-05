@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'order_entry_page.dart';
 import 'userdashboard.dart';
 
@@ -48,52 +47,53 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
     try {
       final supabase = Supabase.instance.client;
 
-      // Login menggunakan Supabase Auth.
+      // Authenticate with Supabase.
       final authResponse = await supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
       final user = authResponse.user;
+
       if (user == null) {
-        throw Exception('Data akun tidak ditemukan setelah login.');
+        throw Exception('User tidak ditemukan.');
       }
 
-      // Ambil role dari tabel account berdasarkan UUID user yang login.
-      // Pastikan account.id berisi UUID yang sama dengan auth.users.id.
+      // Retrieve the user's role from the account table.
       final accountData = await supabase
           .from('account')
           .select('role')
           .eq('id', user.id)
           .maybeSingle();
 
+      if (!mounted) return;
+
       if (accountData == null) {
         await supabase.auth.signOut();
-        if (mounted) {
-          _message(
-            'Data akun tidak ditemukan. Pastikan ID pada tabel account '
-            'sama dengan ID pengguna Supabase Auth.',
-          );
-        }
+
+        _message('Data akun tidak ditemukan. Hubungi administrator.');
         return;
       }
 
-      final role = (accountData['role'] ?? '').toString().trim().toLowerCase();
+      final role = (accountData['role'] as String).toLowerCase().trim();
 
-      if (!mounted) return;
+      // Navigate based on account role.
+      switch (role) {
+        case 'barista':
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const OrderEntryPage()),
+        );
+          break;
 
-      // Arahkan halaman sesuai role yang tersimpan di tabel account.
-      if (role == 'barista') {
+        case 'customer':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const OrderEntryPage()),
+            MaterialPageRoute(builder: (_) => const DashboardUser()),
         );
-      } else if (role == 'user') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const DashboardUser()),
-        );
-      } else {
-        _message('Role akun "$role" belum memiliki halaman tujuan.');
+          break;
+
+        default:
         await supabase.auth.signOut();
+          _message('Role akun tidak dikenali: $role');
       }
     } on AuthException catch (e) {
       if (mounted) _message(e.message);
