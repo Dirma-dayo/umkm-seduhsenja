@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'order_entry_page.dart';
 import 'userdashboard.dart';
 
 import 'signup.dart';
@@ -45,19 +46,55 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
     setState(() => _loading = true);
 
     try {
-      await Supabase.instance.client.auth.signInWithPassword(
+      final supabase = Supabase.instance.client;
+
+      // Login menggunakan Supabase Auth.
+      final authResponse = await supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
-      if (mounted) {
+      final user = authResponse.user;
+      if (user == null) {
+        throw Exception('Data akun tidak ditemukan setelah login.');
+      }
+
+      // Ambil role dari tabel account berdasarkan UUID user yang login.
+      // Pastikan account.id berisi UUID yang sama dengan auth.users.id.
+      final accountData = await supabase
+          .from('account')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (accountData == null) {
+        await supabase.auth.signOut();
+        if (mounted) {
+          _message(
+            'Data akun tidak ditemukan. Pastikan ID pada tabel account '
+            'sama dengan ID pengguna Supabase Auth.',
+          );
+        }
+        return;
+      }
+
+      final role = (accountData['role'] ?? '').toString().trim().toLowerCase();
+
+      if (!mounted) return;
+
+      // Arahkan halaman sesuai role yang tersimpan di tabel account.
+      if (role == 'barista') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const OrderEntryPage()),
+        );
+      } else if (role == 'user') {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const DashboardUser()),
         );
+      } else {
+        _message('Role akun "$role" belum memiliki halaman tujuan.');
+        await supabase.auth.signOut();
       }
-
-      // Supabase now has an authenticated session.
-      // Connect your customer/barista/admin home navigation here.
     } on AuthException catch (e) {
       if (mounted) _message(e.message);
     } catch (e) {
