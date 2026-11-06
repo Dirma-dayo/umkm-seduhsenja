@@ -34,6 +34,225 @@ class _UlasanPageState extends State<UlasanPage> {
     _loadReviews();
   }
 
+
+  void _showCustomReviewForm() {
+    final subjectController = TextEditingController();
+    final reviewController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                decoration: const BoxDecoration(
+                  color: cream,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: background.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        'ULASAN LAINNYA',
+                        style: TextStyle(
+                          color: darkBrown,
+                          fontSize: 21,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      const Text(
+                        'Apa yang ingin kamu ulas?',
+                        style: TextStyle(
+                          color: darkBrown,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      TextField(
+                        controller: subjectController,
+                        maxLength: 60,
+                        decoration: InputDecoration(
+                          hintText: 'Contoh: Pelayanan, suasana cafe...',
+                          hintStyle: const TextStyle(
+                            color: background,
+                            fontSize: 12,
+                            fontFamily: 'Poppins',
+                          ),
+                          filled: true,
+                          fillColor: lightCream,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      const Text(
+                        'Ceritakan pengalamanmu',
+                        style: TextStyle(
+                          color: darkBrown,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      TextField(
+                        controller: reviewController,
+                        maxLines: 4,
+                        maxLength: 500,
+                        decoration: InputDecoration(
+                          hintText: 'Tulis ulasanmu di sini...',
+                          hintStyle: const TextStyle(
+                            color: background,
+                            fontSize: 12,
+                            fontFamily: 'Poppins',
+                          ),
+                          filled: true,
+                          fillColor: lightCream,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: background,
+                            foregroundColor: cream,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onPressed: isSubmitting
+                              ? null
+                              : () async {
+                                  final subject = subjectController.text.trim();
+                                  final review = reviewController.text.trim();
+
+                                  if (subject.isEmpty || review.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Isi topik dan ulasan terlebih dahulu.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  setSheetState(() {
+                                    isSubmitting = true;
+                                  });
+
+                                  try {
+                                    await _submitReview(
+                                      subject: subject,
+                                      review: review,
+                                      menuId: null,
+                                    );
+
+                                    if (!mounted) return;
+
+                                    Navigator.pop(sheetContext);
+
+                                    ScaffoldMessenger.of(this.context)
+                                        .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Ulasan berhasil dikirim!',
+                                            ),
+                                          ),
+                                        );
+                                  } catch (e) {
+                                    setSheetState(() {
+                                      isSubmitting = false;
+                                    });
+
+                                    ScaffoldMessenger.of(this.context)
+                                        .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Gagal mengirim ulasan: $e',
+                                            ),
+                                          ),
+                                        );
+                                  }
+                                },
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: cream,
+                                  ),
+                                )
+                              : const Text(
+                                  'Kirim Ulasan',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      subjectController.dispose();
+      reviewController.dispose();
+    });
+  }
+
+
   // LOAD PRODUCTS
   Future<void> _loadProducts() async {
     try {
@@ -62,8 +281,9 @@ class _UlasanPageState extends State<UlasanPage> {
   // LOAD OTHER REVIEWS
   Future<void> _loadReviews() async {
     try {
-      final response = await supabase
-          .from('ulasan')
+      final response = // Load reviews
+      await supabase
+          .from('complain')
           .select('id, buyer_id, menu_id, subject, complaint_text, date_time')
           .order('date_time', ascending: false);
 
@@ -100,9 +320,10 @@ class _UlasanPageState extends State<UlasanPage> {
 
   // SUBMIT REVIEW
   Future<void> _submitReview({
-    required Map<String, dynamic> product,
+    required String subject,
     required String review,
-  }) async {
+    int? menuId,
+}) async {
     final user = supabase.auth.currentUser;
 
     if (user == null) {
@@ -111,8 +332,8 @@ class _UlasanPageState extends State<UlasanPage> {
 
     await supabase.from('complain').insert({
       'buyer_id': user.id,
-      'menu_id': product['id'],
-      'subject': 'Ulasan ${product['name']}',
+      'menu_id': menuId,
+      'subject': subject,
       'complaint_text': review,
       'date_time': DateTime.now().toIso8601String(),
     });
@@ -255,7 +476,8 @@ class _UlasanPageState extends State<UlasanPage> {
 
                                   try {
                                     await _submitReview(
-                                      product: product,
+                                      subject: 'Ulasan ${product['name']}',
+                                      menuId: product['id'],
                                       review: review,
                                     );
 
@@ -547,6 +769,58 @@ class _UlasanPageState extends State<UlasanPage> {
                     child: _buildProductCard(product),
                   ),
                 ),
+
+              const SizedBox(height: 8),
+
+              GestureDetector(
+                onTap: _showCustomReviewForm,
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: lightCream,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: cream, width: 1.5),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.edit_note_rounded,
+                        color: burgundy,
+                        size: 34,
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ulasan Lainnya',
+                              style: TextStyle(
+                                color: burgundy,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Ulas pelayanan, suasana, atau hal lainnya.',
+                              style: TextStyle(
+                                color: darkBrown,
+                                fontSize: 11,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded, color: burgundy),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
 
               const SizedBox(height: 24),
 
