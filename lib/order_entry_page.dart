@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Halaman daftar pesanan dari tabel `order_entry` di Supabase.
-///
-/// Pastikan Supabase.initialize(...) sudah dijalankan di main.dart
-/// sebelum halaman ini dibuka.
 class OrderEntryPage extends StatefulWidget {
   const OrderEntryPage({super.key});
 
@@ -99,9 +95,11 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
     return status
         .replaceAll('_', ' ')
         .split(' ')
-        .map((word) => word.isEmpty
-            ? word
-            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+        .map(
+          (word) => word.isEmpty
+              ? word
+              : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+        )
         .join(' ');
   }
 
@@ -146,8 +144,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
   Widget _orderCard(Map<String, dynamic> order) {
     final tableNum = order['table_num'];
     final orderNumber = order['customer_order_number'];
-    final customerName =
-        (order['customer_name'] ?? 'Pelanggan').toString();
+    final customerName = (order['customer_name'] ?? 'Pelanggan').toString();
     final status = _statusLabel(order['status']);
 
     return Container(
@@ -179,8 +176,10 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
               const SizedBox(width: 8),
               Flexible(
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: _cream,
                     borderRadius: BorderRadius.circular(8),
@@ -227,20 +226,14 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _infoRow(
-                  'Jenis pesanan',
-                  _orderType(order['order_type']),
-                ),
+                _infoRow('Jenis pesanan', _orderType(order['order_type'])),
                 _infoRow(
                   'Nomor meja',
                   tableNum == null ? '-' : 'Meja $tableNum',
                 ),
                 const Divider(color: _brown, height: 18),
                 _infoRow('Subtotal', _rupiah(order['subtotal'])),
-                _infoRow(
-                  'Diskon',
-                  _rupiah(order['discount_amount']),
-                ),
+                _infoRow('Diskon', _rupiah(order['discount_amount'])),
                 const Divider(color: _brown, height: 18),
                 _infoRow('Total', _rupiah(order['total']), bold: true),
               ],
@@ -297,8 +290,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: _brown, size: 42),
+                      const Icon(Icons.error_outline, color: _brown, size: 42),
                       const SizedBox(height: 12),
                       const Text(
                         'Gagal mengambil data pesanan.',
@@ -376,10 +368,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
                   const SizedBox(height: 4),
                   Text(
                     '${orders.length} pesanan',
-                    style: const TextStyle(
-                      color: _brown,
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(color: _brown, fontSize: 13),
                   ),
                   const SizedBox(height: 16),
                   ...orders.map(_orderCard),

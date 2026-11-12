@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'order_entry_page.dart';
 import 'userdashboard.dart';
-
 import 'signup.dart';
+import 'dashboard_admin.dart';
 
 class LoginpageWidget extends StatefulWidget {
   const LoginpageWidget({super.key});
@@ -79,20 +80,26 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
 
       // Navigate based on account role.
       switch (role) {
+        case 'admin':
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DashboardAdmin()),
+          );
+          break;
+
         case 'barista':
-        Navigator.of(context).pushReplacement(
+          Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const OrderEntryPage()),
-        );
+          );
           break;
 
         case 'customer':
-        Navigator.of(context).pushReplacement(
+          Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const DashboardUser()),
-        );
+          );
           break;
 
         default:
-        await supabase.auth.signOut();
+          await supabase.auth.signOut();
           _message('Role akun tidak dikenali: $role');
       }
     } on AuthException catch (e) {
