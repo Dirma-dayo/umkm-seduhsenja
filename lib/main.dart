@@ -4,6 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'login.dart';
 import 'dashboard_admin.dart';
+import 'helpers/mousenav.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +26,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginpageWidget(),
+
+      navigatorKey: navigatorKey,
+
+      builder: (context, child) {
+        return MouseNavigation(
+          navigatorKey: navigatorKey,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+
+      home: const LoginpageWidget(),
     );
   }
 }

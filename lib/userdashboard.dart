@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'ulasan.dart';
 import 'menupage.dart';
 
 class DashboardUser extends StatefulWidget {
@@ -669,6 +669,7 @@ class _DashboardUserState extends State<DashboardUser> {
                 ),
               ],
               const SizedBox(height: 22),
+
               _actionButton(
                 text: 'Buka Menu',
                 icon: Icons.restaurant_menu_rounded,
@@ -678,14 +679,17 @@ class _DashboardUserState extends State<DashboardUser> {
                   );
                 },
               ),
+
               const SizedBox(height: 12),
+
               _actionButton(
                 text: 'Beri Ulasan',
                 icon: Icons.rate_review_outlined,
-                onPressed: () => _handleAction(
-                  widget.onGiveReview,
-                  'Halaman ulasan belum dihubungkan.',
-                ),
+                onPressed: () {
+                  Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const UlasanPage()));
+                },
               ),
               const SizedBox(height: 20),
               const Center(
