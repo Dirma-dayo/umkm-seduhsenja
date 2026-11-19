@@ -16,7 +16,9 @@ class LoginpageWidget extends StatefulWidget {
 
 class _LoginpageWidgetState extends State<LoginpageWidget> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+
+  // Bisa berisi email ATAU username
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
@@ -29,7 +31,7 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -40,6 +42,24 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
     );
   }
 
+  // Jika input berisi '@' dianggap email, selain itu dianggap username
+  // dan dicarikan email-nya lewat fungsi database get_login_email.
+  Future<String?> _resolveEmail(String input) async {
+    final value = input.trim();
+
+    if (value.contains('@')) return value;
+
+    final result = await Supabase.instance.client.rpc(
+      'get_login_email',
+      params: {'p_username': value},
+    );
+
+    final email = result?.toString().trim();
+    if (email == null || email.isEmpty) return null;
+
+    return email;
+  }
+
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -48,9 +68,16 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
     try {
       final supabase = Supabase.instance.client;
 
+      final email = await _resolveEmail(_identifierController.text);
+
+      if (email == null) {
+        if (mounted) _message('Email/username atau password salah.');
+        return;
+      }
+
       // Authenticate with Supabase.
       final authResponse = await supabase.auth.signInWithPassword(
-        email: _emailController.text.trim(),
+        email: email,
         password: _passwordController.text,
       );
 
@@ -113,19 +140,25 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
   }
 
   Future<void> _forgotPassword() async {
-    final email = _emailController.text.trim();
+    final input = _identifierController.text.trim();
 
-    if (email.isEmpty ||
-        !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
-      _message('Masukkan email yang valid terlebih dahulu.');
+    if (input.isEmpty) {
+      _message('Masukkan email atau username terlebih dahulu.');
       return;
     }
 
     try {
-      await Supabase.instance.client.auth.resetPasswordForEmail(email);
+      final email = await _resolveEmail(input);
 
+      if (email != null &&
+          RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+        await Supabase.instance.client.auth.resetPasswordForEmail(email);
+      }
+
+      // Pesan yang sama dipakai walau akun tidak ada,
+      // supaya orang lain tidak bisa menebak akun yang terdaftar.
       if (mounted) {
-        _message('Link reset password dikirim jika email terdaftar.');
+        _message('Link reset password dikirim jika akun terdaftar.');
       }
     } on AuthException catch (e) {
       if (mounted) _message(e.message);
@@ -248,14 +281,12 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
                               ),
                               const SizedBox(height: 24),
                               _input(
-                                controller: _emailController,
-                                hint: 'Email',
-                                icon: Icons.email_outlined,
+                                controller: _identifierController,
+                                hint: 'Email atau Username',
+                                icon: Icons.person_outline,
                                 validator: (value) {
-                                  if (value == null ||
-                                      !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                                          .hasMatch(value.trim())) {
-                                    return 'Masukkan email yang valid';
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Email atau username wajib diisi';
                                   }
                                   return null;
                                 },
@@ -359,6 +390,8 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
       controller: controller,
       obscureText: obscure,
       validator: validator,
+      autocorrect: false,
+      enableSuggestions: !obscure,
       style: const TextStyle(color: buttonTextColor, fontFamily: 'Poppins'),
       decoration: InputDecoration(
         hintText: hint,

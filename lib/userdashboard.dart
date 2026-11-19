@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/seduh_app_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'ulasan.dart';
 import 'menupage.dart';
@@ -471,6 +472,7 @@ class _DashboardUserState extends State<DashboardUser> {
 
     return Scaffold(
       backgroundColor: background,
+      appBar: const SeduhAppBar(),
       body: SafeArea(
         child: RefreshIndicator(
           color: cardColor,
@@ -480,35 +482,6 @@ class _DashboardUserState extends State<DashboardUser> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Seduh Senja',
-                      style: const TextStyle(
-                        color: cream,
-                        fontSize: 24,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: const BoxDecoration(
-                      color: cardColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      tooltip: 'Refresh dashboard',
-                      onPressed: _loadDashboard,
-                      icon: const Icon(Icons.refresh_rounded, color: cream),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 26),
               const Text(
                 'Dashboard Pelanggan',
                 style: TextStyle(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/seduh_app_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OrderEntryPage extends StatefulWidget {
@@ -248,26 +249,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _brown,
-      appBar: AppBar(
-        backgroundColor: _brown,
-        foregroundColor: _cream,
-        elevation: 0,
-        title: const Text(
-          'Seduh Senja',
-          style: TextStyle(
-            color: _cream,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Muat ulang pesanan',
-            onPressed: _refreshOrders,
-            icon: const Icon(Icons.refresh, color: _cream),
-          ),
-        ],
-      ),
+      appBar: const SeduhAppBar(),
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(

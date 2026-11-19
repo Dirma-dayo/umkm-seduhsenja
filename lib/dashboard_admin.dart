@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'widgets/seduh_app_bar.dart';
+import 'package:seduhsenja/order_entry_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'olah_menu.dart';
-import 'kelola_toping.dart';
-import 'history_detail1.dart';
-import 'list_barista.dart';
+import 'pengeluaran.dart';
+import 'kelola_barista.dart';
 
 class DashboardAdmin extends StatefulWidget {
   const DashboardAdmin({super.key});
@@ -52,6 +53,11 @@ class _DashboardAdminState extends State<DashboardAdmin> {
     return DateTime(now.year, now.month, 1);
   }
 
+  DateTime get nextMonthStart {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month + 1, 1);
+  }
+
   String money(num value) {
     final digits = value.round().toString();
     final result = StringBuffer();
@@ -64,6 +70,19 @@ class _DashboardAdminState extends State<DashboardAdmin> {
     }
 
     return 'Rp$result';
+  }
+
+  // Mengubah nilai apa pun (num / String) menjadi double
+  double toDouble(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0;
+  }
+
+  // Tampilkan jumlah tanpa nol di belakang koma (12.0 -> 12, 0.5 -> 0.5)
+  String qty(num value) {
+    if (value == value.roundToDouble()) return value.toInt().toString();
+    return value.toString();
   }
 
   DateTime? parseDate(dynamic value) {
@@ -109,7 +128,7 @@ class _DashboardAdminState extends State<DashboardAdmin> {
       int newTodayOrderCount = 0;
 
       for (final row in List<Map<String, dynamic>>.from(history)) {
-        final amount = (row['income'] as num?)?.toDouble() ?? 0;
+        final amount = toDouble(row['income']);
         final date = parseDate(row['date_time']);
 
         newTotalIncome += amount;
@@ -121,7 +140,7 @@ class _DashboardAdminState extends State<DashboardAdmin> {
             newTodayOrderCount++;
           }
 
-          if (!date.isBefore(monthStart)) {
+          if (!date.isBefore(monthStart) && date.isBefore(nextMonthStart)) {
             newMonthIncome += amount;
           }
         }
@@ -139,21 +158,21 @@ class _DashboardAdminState extends State<DashboardAdmin> {
       final newMonthExpenses = <Map<String, dynamic>>[];
 
       for (final row in List<Map<String, dynamic>>.from(shoppingData)) {
-        final amount = (row['total'] as num?)?.toDouble() ?? 0;
+        final amount = toDouble(row['total']);
         final date = parseDate(row['date_time']);
 
         newTotalExpense += amount;
 
         if (date != null &&
             !date.isBefore(monthStart) &&
-            date.isBefore(DateTime.now().add(const Duration(seconds: 1)))) {
+            date.isBefore(nextMonthStart)) {
           newMonthExpense += amount;
 
           newMonthExpenses.add({
             'id': row['id'],
             'name': row['name'] ?? 'Barang lainnya',
-            'quantity': row['quantity'] ?? 0,
-            'price': row['price'] ?? 0,
+            'quantity': toDouble(row['quantity']),
+            'price': toDouble(row['price']),
             'total': amount,
             'date_time': date,
           });
@@ -192,7 +211,7 @@ class _DashboardAdminState extends State<DashboardAdmin> {
 
         for (final row in List<Map<String, dynamic>>.from(itemData)) {
           final name = (row['menu_name'] ?? 'Menu lainnya').toString();
-          final quantity = (row['quantity'] as num?)?.toInt() ?? 0;
+          final quantity = toDouble(row['quantity']).toInt();
 
           newMenuSales[name] = (newMenuSales[name] ?? 0) + quantity;
         }
@@ -375,20 +394,20 @@ class _DashboardAdminState extends State<DashboardAdmin> {
 
   // PANTAU BARISTA
   Widget tombolPantauBarista() {
-    return navigationButton('Pantau Barista', () {
+    return navigationButton('Pantau Pesanan', () {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ListBarista()),
+        MaterialPageRoute(builder: (context) => OrderEntryPage()),
       );
     });
   }
 
   // TAMBAH BARISTA
   Widget tombolTambahBarista() {
-    return navigationButton('Tambah Barista', () {
+    return navigationButton('Kelola Barista', () {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ListBarista()),
+        MaterialPageRoute(builder: (context) => const ListBarista()),
       );
     });
   }
@@ -403,22 +422,13 @@ class _DashboardAdminState extends State<DashboardAdmin> {
     });
   }
 
-  // KELOLA TOPPING
-  Widget tombolKelolaTopping() {
-    return navigationButton('Kelola Topping', () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const KelolaTopping()),
-      );
-    });
-  }
 
-  // RIWAYAT PESANAN
+  // Riwayat Pesanan change to show order history details rom table order_history
   Widget tombolRiwayatPesanan() {
     return navigationButton('Riwayat Pesanan', () {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => HistoryDetail()),
+        MaterialPageRoute(builder: (context) => const HistoryDetail()),
       );
     });
   }
@@ -429,27 +439,7 @@ class _DashboardAdminState extends State<DashboardAdmin> {
 
     return Scaffold(
       backgroundColor: brown,
-      appBar: AppBar(
-        backgroundColor: brown,
-        foregroundColor: cream,
-        elevation: 0,
-        title: const Text(
-          'Seduh Senja',
-          style: TextStyle(
-            color: cream,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Poppins',
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: loading ? null : loadDashboard,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh dashboard',
-          ),
-        ],
-      ),
+      appBar: const SeduhAppBar(),
       body: SafeArea(
         child: loading
             ? const Center(child: CircularProgressIndicator(color: cream))
@@ -585,7 +575,7 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                                   Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      '${expense['quantity']} barang × '
+                                      '${qty(expense['quantity'] as num)} barang × '
                                       '${money(expense['price'] as num)}',
                                       style: const TextStyle(
                                         color: darkBrown,
@@ -649,9 +639,10 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                     const SizedBox(height: 10),
 
                     navigationButton('Kelola Keuangan', () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Kelola Keuangan belum dihubungkan.'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HistoryDetail(),
                         ),
                       );
                     }),
@@ -662,9 +653,6 @@ class _DashboardAdminState extends State<DashboardAdmin> {
 
                     const SizedBox(height: 10),
 
-                    tombolKelolaTopping(),
-
-                    const SizedBox(height: 10),
 
                     tombolRiwayatPesanan(),
                   ],

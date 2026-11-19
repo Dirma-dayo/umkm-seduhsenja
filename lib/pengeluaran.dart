@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/seduh_app_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HistoryDetail extends StatefulWidget {
@@ -87,6 +88,19 @@ class _HistoryDetailState extends State<HistoryDetail> {
     return 'Rp$result';
   }
 
+  // Mengubah nilai apa pun (num / String) menjadi double
+  double toDouble(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0;
+  }
+
+  // Tampilkan jumlah tanpa nol di belakang koma (12.0 -> 12, 0.5 -> 0.5)
+  String qty(num value) {
+    if (value == value.roundToDouble()) return value.toInt().toString();
+    return value.toString();
+  }
+
   // Mengubah tanggal dari Supabase
   DateTime? parseDate(dynamic value) {
     if (value == null) return null;
@@ -119,7 +133,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
     double total = 0;
 
     for (final item in data) {
-      total += (item['total'] as num?)?.toDouble() ?? 0;
+      total += toDouble(item['total']);
     }
 
     return total;
@@ -165,7 +179,9 @@ class _HistoryDetailState extends State<HistoryDetail> {
                       controller: quantityController,
                       label: 'Jumlah barang',
                       hint: 'Contoh: 2',
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     expenseInput(
@@ -192,8 +208,8 @@ class _HistoryDetailState extends State<HistoryDetail> {
                       ? null
                       : () async {
                           final name = nameController.text.trim();
-                          final quantity = int.tryParse(
-                            quantityController.text.trim(),
+                          final quantity = double.tryParse(
+                            quantityController.text.trim().replaceAll(',', '.'),
                           );
                           final price = double.tryParse(
                             priceController.text.trim().replaceAll(',', '.'),
@@ -224,7 +240,10 @@ class _HistoryDetailState extends State<HistoryDetail> {
                               'quantity': quantity,
                               'price': price,
                               'total': total,
-                              'date_time': DateTime.now().toIso8601String(),
+                              // Simpan dalam UTC supaya tidak bergeser 7 jam
+                              'date_time': DateTime.now()
+                                  .toUtc()
+                                  .toIso8601String(),
                             });
 
                             if (!dialogContext.mounted) return;
@@ -312,9 +331,9 @@ class _HistoryDetailState extends State<HistoryDetail> {
   // Kartu satu pengeluaran
   Widget expenseItem(Map<String, dynamic> expense) {
     final name = expense['name']?.toString() ?? 'Barang lainnya';
-    final quantity = (expense['quantity'] as num?)?.toInt() ?? 0;
-    final price = (expense['price'] as num?)?.toDouble() ?? 0;
-    final total = (expense['total'] as num?)?.toDouble() ?? 0;
+    final quantity = toDouble(expense['quantity']);
+    final price = toDouble(expense['price']);
+    final total = toDouble(expense['total']);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -324,7 +343,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
           Expanded(
             flex: 5,
             child: Text(
-              '$name\n$quantity barang × ${money(price)}',
+              '$name\n${qty(quantity)} barang × ${money(price)}',
               style: const TextStyle(
                 color: darkBrown,
                 fontSize: 13,
@@ -429,27 +448,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
 
     return Scaffold(
       backgroundColor: brown,
-      appBar: AppBar(
-        backgroundColor: brown,
-        foregroundColor: cream,
-        elevation: 0,
-        title: const Text(
-          'Seduh Senja',
-          style: TextStyle(
-            color: cream,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Poppins',
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: loading ? null : loadExpenses,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
+      appBar: const SeduhAppBar(),
       body: SafeArea(
         child: Column(
           children: [

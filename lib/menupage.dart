@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/seduh_app_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductsPage extends StatefulWidget {
@@ -1056,6 +1057,7 @@ class _ProductsPageState extends State<ProductsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
+      appBar: const SeduhAppBar(),
       body: SafeArea(
         child: RefreshIndicator(
           color: background,
